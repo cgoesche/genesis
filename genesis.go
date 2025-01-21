@@ -11,7 +11,7 @@ import (
 )
 
 const(
-  Version string = "Genesis version 0.9.1, build for GNU/Linux on ARM64"
+  Version string = "Genesis version 0.1.0, build for GNU/Linux on ARM64"
 )
 
 var(
@@ -21,8 +21,7 @@ var(
   NewBrightness               int
 
   opts = struct {
-		Help              options.Help  `getopt:"--help                       Display this help page"`
-    Animation         bool          `getopt:"--animate -a                 Start a smooth keyboard light show"`
+    Help              options.Help  `getopt:"--help                       Display this help page"`
     NewBrightness     string        `getopt:"--brightness -b=[-+]INT[%]   Define the new keyboard brightness"`
     ShowBrightness    bool          `getopt:"--current -c                 Show current keyboard brightness in decimal"`
     ShowBrightnessPc  bool          `getopt:"--percentage -p              Show current keyboard brightness in %"`
@@ -32,7 +31,6 @@ var(
     ShowMaxBrightness bool          `getopt:"--maximum -m                 Show maximum keyboard brightness"`
     ShowVersion       bool          `getopt:"--version -v                 Show version information"`
   }{
-    Animation:false,
     ShowBrightness:false,
     ShowBrightnessPc:false,
     TurnBrightnessOn:false,
@@ -41,7 +39,6 @@ var(
     ShowMaxBrightness:false,
     ShowVersion:false,
   }
-
 )
 
 type BrightnessArgComputeData struct {
