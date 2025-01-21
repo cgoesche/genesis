@@ -18,8 +18,8 @@ var(
   CurrentBrightness           int
   CurrentBrightnessPercentage int
   MaxBrightness               int
-  NewBrightness               int 
-  
+  NewBrightness               int
+
   opts = struct {
 		Help              options.Help  `getopt:"--help                       Display this help page"`
     Animation         bool          `getopt:"--animate -a                 Start a smooth keyboard light show"`
@@ -57,7 +57,7 @@ func GetCurrentBrightness(Bus dbus.BusObject) (err error) {
   }
   CurrentBrightnessPercentage = int(math.Round( ( float64(CurrentBrightness) / float64(MaxBrightness)) * 100.0))
 
-  return nil 
+  return nil
 }
 
 func GetMaxBrightness(Bus dbus.BusObject) (err error) {
@@ -66,7 +66,7 @@ func GetMaxBrightness(Bus dbus.BusObject) (err error) {
     return fmt.Errorf("Failed to get maximum brightness\nDetails: %s", err)
   }
 
-  return nil 
+  return nil
 }
 
 func SetBrightness(Bus dbus.BusObject, NewBrightness int) (error) {
@@ -75,14 +75,14 @@ func SetBrightness(Bus dbus.BusObject, NewBrightness int) (error) {
   return nil
 }
 
-// Further parsing --brightness 
+// Further parsing --brightness
 func ParseBrightnessArg(BrightnessArgStr string) (bdata *BrightnessArgComputeData, err error) {
-  BrightnessArgComputeData := BrightnessArgComputeData{} 
-  var newString = make([]string, 0) 
+  BrightnessArgComputeData := BrightnessArgComputeData{}
+  var newString = make([]string, 0)
 
   for i := 0; i < len(BrightnessArgStr); i++{
     stringValue := string(BrightnessArgStr[i])
-    
+
     if i == 0 {
       switch stringValue {
         case "-":
@@ -94,30 +94,30 @@ func ParseBrightnessArg(BrightnessArgStr string) (bdata *BrightnessArgComputeDat
       }
     } else if i == len(BrightnessArgStr) - 1 && stringValue == "%" {
       BrightnessArgComputeData.Percentage = true
-      continue 
-    } 
-    
-    newString = append(newString, stringValue) 
+      continue
+    }
+
+    newString = append(newString, stringValue)
   }
-  
+
   finalIntValue := strings.Join(newString, "")
   BrightnessArgComputeData.NewBrightnessInt, err = strconv.Atoi(finalIntValue)
   if err != nil {
     return nil, fmt.Errorf("Invalid input type")
   }
 
-  return &BrightnessArgComputeData, nil 
+  return &BrightnessArgComputeData, nil
 }
 
 // Compute the brightness value for SetBrightness()
 func ComputeNewBrightnessValue(bCompData *BrightnessArgComputeData) (newBrightness int, err error) {
   // Round result and convert float64 to int
   var percentageValue = int( math.Round(( float64(bCompData.NewBrightnessInt) / 100.0 ) * float64(MaxBrightness) ))
-  
+
   switch bCompData.Percentage {
     case true:
       if bCompData.Operator == "+" {
-        newBrightness = CurrentBrightness + percentageValue 
+        newBrightness = CurrentBrightness + percentageValue
       }else if bCompData.Operator == "-" {
         newBrightness = CurrentBrightness - percentageValue
       }else {
@@ -125,18 +125,18 @@ func ComputeNewBrightnessValue(bCompData *BrightnessArgComputeData) (newBrightne
       }
     case false:
       if bCompData.Operator == "+" {
-        newBrightness = CurrentBrightness + bCompData.NewBrightnessInt 
+        newBrightness = CurrentBrightness + bCompData.NewBrightnessInt
       }else if bCompData.Operator == "-" {
         newBrightness = CurrentBrightness - bCompData.NewBrightnessInt
       }else {
         newBrightness = bCompData.NewBrightnessInt
       }
-    default: 
+    default:
       return 0, fmt.Errorf("Could not compute new keyboard brightness!")
   }
-  
+
   if newBrightness < 0 {
-    newBrightness = 0 
+    newBrightness = 0
   }else if newBrightness > 255 {
     newBrightness = MaxBrightness
   }
@@ -172,23 +172,23 @@ func main() {
     os.Exit(1)
 	}
 	defer conn.Close()
-  
-  // Get the D-Bus Object that handles the keyboard light levels  
+
+  // Get the D-Bus Object that handles the keyboard light levels
   Bus := conn.Object("org.freedesktop.UPower", "/org/freedesktop/UPower/KbdBacklight")
-  
+
   // Get maximum keyboard brightness
   if err = GetMaxBrightness(Bus); err != nil {
     fmt.Printf("%s\n", err)
     os.Exit(2)
-  } 
-  
+  }
+
   // Get current keyboard brightness
   if err = GetCurrentBrightness(Bus); err != nil {
     fmt.Printf("%s\n", err)
     os.Exit(2)
   }
- 
-  // Testing options that will exit program before performing 
+
+  // Testing options that will exit program before performing
   if opts.ShowVersion == true {
     fmt.Printf("%s\n", Version)
     os.Exit(0)
@@ -215,8 +215,8 @@ func main() {
     os.Exit(0)
   } else if opts.AutoAdjust == true {
     switch  {
-      case CurrentBrightness <= MaxBrightness && CurrentBrightness > 0: 
-        NewBrightness = 0 
+      case CurrentBrightness <= MaxBrightness && CurrentBrightness > 0:
+        NewBrightness = 0
       case CurrentBrightness >= 0:
         NewBrightness = MaxBrightness
       default:
@@ -238,7 +238,7 @@ func main() {
       fmt.Printf("genesis: %s\n", err)
       os.Exit(2)
     }
-    
+
     // Computing the new brightness level from the returned data generated by parsing
     // the --brightness option argument
     NewBrightness, err = ComputeNewBrightnessValue(bArgData)
@@ -246,8 +246,8 @@ func main() {
       fmt.Printf("genesis: %s\n", err)
       os.Exit(2)
     }
-  
-    // Setting new brightness level 
+
+    // Setting new brightness level
     if err = SetBrightness(Bus, NewBrightness); err != nil {
       fmt.Printf("genesis: Failed to set keyboard brightness\nDetails: %s\n", err)
       os.Exit(2)

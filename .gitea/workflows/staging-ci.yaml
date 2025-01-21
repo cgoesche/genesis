@@ -1,0 +1,45 @@
+name: Pull Request CI
+run-name: ${{ gitea.actor }} is building on ${{ gitea.repository }} 🚀
+on:
+  pull_request:
+    branches: [staging]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Lint static source files
+        uses: ./.gitea/actions/pre-commit-linter
+
+  integrate:
+    needs: [lint]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install git-cliff
+        run: |
+          chmod +x ./install-cliff.sh
+          ./install-cliff.sh
+        working-directory: ./scripts
+
+      - name: Version bump, tag and push new CHANGELOG.md
+        run: |
+          /usr/local/bin/git-cliff --bump -o CHANGELOG.md
+          echo ${{ github.event.pull_request.head.ref }}
+          git checkout ${{ github.event.pull_request.head.ref }}
+          git config --global user.email "act_runner@gitea.christiangoeschel.com"
+          git config --global user.name "Act Runner"
+          git add CHANGELOG.md
+          git commit -m "ci: Update CHANGELOG.md for $(/usr/local/bin/git-cliff --bumped-version)"
+          git tag $(/usr/local/bin/git-cliff --bumped-version)
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          git push --tags
