@@ -10,9 +10,6 @@ This changelog documents all notable changes.
 
 ### ⚙️ Miscellaneous Tasks
 
-- *(ci)* Add CI yaml and helper tools - ([cd7663d](https://gitea.christiangoeschel.com/christiangoeschel/genesis/commit/cd7663da56de0cdbb3368b705069862a27fe68de))
-
-
+- _(ci)_ Add CI yaml and helper tools - ([cd7663d](https://gitea.christiangoeschel.com/christiangoeschel/genesis/commit/cd7663da56de0cdbb3368b705069862a27fe68de))
 
 Christian Goeschel Ndjomouo
-
